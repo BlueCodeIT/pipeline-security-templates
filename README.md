@@ -4,7 +4,7 @@
 Add Trivy, Semgrep, and Checkov to your CI pipeline in minutes — copy-paste ready.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-supported-blue?logo=github-actions)](./github-actions/)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-supported-blue?logo=github-actions)](./.github/workflows/)
 [![GitLab CI](https://img.shields.io/badge/GitLab_CI-supported-orange?logo=gitlab)](./gitlab-ci/)
 [![Bitbucket Pipelines](https://img.shields.io/badge/Bitbucket-supported-blue?logo=bitbucket)](./bitbucket-pipelines/)
 

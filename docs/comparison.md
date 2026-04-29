@@ -88,7 +88,7 @@ Rough estimates on a medium-sized repo (~50k LOC, ~10 IaC files, 1 container):
 | Semgrep | 30–90s | 30–90s (no caching benefit) |
 | Checkov | 30–60s | 30–60s |
 
-In parallel via [`full-stack.yml`](../github-actions/full-stack.yml): **~3–5 minutes total**.
+In parallel via [`full-stack.yml`](../.github/workflows/full-stack.yml): **~3–5 minutes total**.
 
 ## False positives
 
