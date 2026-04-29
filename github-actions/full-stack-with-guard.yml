@@ -1,0 +1,171 @@
+name: Full Security Stack + Deployment Guard
+
+# Reusable workflow — Trivy + Semgrep + Checkov + Deployment Guard
+# Provides: detailed findings (in Security tab) AND a single 0-100 risk score
+#
+# Get an API key: https://www.bluecodeit.com/signup
+#
+# Usage in your repo:
+#
+# jobs:
+#   security:
+#     uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@main
+#     secrets:
+#       guard-api-key: ${{ secrets.GUARD_API_KEY }}
+#
+
+on:
+  workflow_call:
+    inputs:
+      # Shared
+      fail-on-issues:
+        description: 'Fail the build when any scanner reports findings'
+        required: false
+        type: boolean
+        default: true
+
+      # Trivy
+      trivy-image:
+        required: false
+        type: string
+        default: ''
+      trivy-dockerfile:
+        required: false
+        type: string
+        default: 'Dockerfile'
+      trivy-severity:
+        required: false
+        type: string
+        default: 'CRITICAL,HIGH'
+
+      # Semgrep
+      semgrep-config:
+        required: false
+        type: string
+        default: 'p/default'
+      semgrep-severity:
+        required: false
+        type: string
+        default: 'WARNING'
+
+      # Checkov
+      checkov-directory:
+        required: false
+        type: string
+        default: '.'
+      checkov-framework:
+        required: false
+        type: string
+        default: 'all'
+
+      # Deployment Guard
+      guard-fail-on-warn:
+        description: 'Fail the build on WARN verdict (default: only on BLOCKED)'
+        required: false
+        type: boolean
+        default: false
+
+      # Skip flags
+      skip-trivy:
+        required: false
+        type: boolean
+        default: false
+      skip-semgrep:
+        required: false
+        type: boolean
+        default: false
+      skip-checkov:
+        required: false
+        type: boolean
+        default: false
+      skip-guard:
+        required: false
+        type: boolean
+        default: false
+
+    secrets:
+      guard-api-key:
+        description: 'Deployment Guard API key. Get one at https://www.bluecodeit.com/signup'
+        required: false
+
+jobs:
+  trivy:
+    if: inputs.skip-trivy == false
+    uses: ./.github/workflows/trivy-container-scan.yml
+    with:
+      image: ${{ inputs.trivy-image }}
+      dockerfile: ${{ inputs.trivy-dockerfile }}
+      severity: ${{ inputs.trivy-severity }}
+      fail-on-issues: ${{ inputs.fail-on-issues }}
+
+  semgrep:
+    if: inputs.skip-semgrep == false
+    uses: ./.github/workflows/semgrep-sast.yml
+    with:
+      config: ${{ inputs.semgrep-config }}
+      severity: ${{ inputs.semgrep-severity }}
+      fail-on-issues: ${{ inputs.fail-on-issues }}
+
+  checkov:
+    if: inputs.skip-checkov == false
+    uses: ./.github/workflows/checkov-iac.yml
+    with:
+      directory: ${{ inputs.checkov-directory }}
+      framework: ${{ inputs.checkov-framework }}
+      soft-fail: ${{ !inputs.fail-on-issues }}
+
+  deployment-guard:
+    name: Deployment Guard Risk Score
+    if: inputs.skip-guard == false
+    runs-on: ubuntu-latest
+    needs: [trivy, semgrep, checkov]
+    if: always() && inputs.skip-guard == false
+    steps:
+      - name: Check API key is set
+        env:
+          GUARD_API_KEY: ${{ secrets.guard-api-key }}
+        run: |
+          if [ -z "$GUARD_API_KEY" ]; then
+            echo "⚠️  GUARD_API_KEY secret not set — skipping Deployment Guard."
+            echo "Get a free API key: https://www.bluecodeit.com/signup"
+            exit 0
+          fi
+
+      - name: Checkout
+        if: env.GUARD_API_KEY != ''
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # Required for diff analysis
+
+      - name: Run Deployment Guard
+        if: env.GUARD_API_KEY != ''
+        uses: BlueCodeIT/deployment-guard-action@v1
+        with:
+          api-key: ${{ secrets.guard-api-key }}
+          fail-on-warn: ${{ inputs.guard-fail-on-warn }}
+
+  summary:
+    name: Security + Risk Summary
+    runs-on: ubuntu-latest
+    needs: [trivy, semgrep, checkov, deployment-guard]
+    if: always()
+    steps:
+      - name: Aggregate results
+        run: |
+          echo "## 🛡️ Security Stack + Deployment Guard" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Detailed findings" >> $GITHUB_STEP_SUMMARY
+          echo "| Tool | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Trivy (Container CVEs) | ${{ needs.trivy.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Semgrep (SAST) | ${{ needs.semgrep.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Checkov (IaC) | ${{ needs.checkov.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Findings detail: see **Security tab**." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment risk" >> $GITHUB_STEP_SUMMARY
+          echo "| Score | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployment Guard | ${{ needs.deployment-guard.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Risk dashboard: https://www.bluecodeit.com/dashboard" >> $GITHUB_STEP_SUMMARY
