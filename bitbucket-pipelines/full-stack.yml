@@ -1,0 +1,68 @@
+# Full Security Stack — Bitbucket Pipelines Template
+# Trivy + Semgrep + Checkov in parallel
+#
+# To use: copy this entire file's `pipelines:` section into your
+# bitbucket-pipelines.yml at the root of your repo.
+#
+# All three scans run in parallel. Total time: ~3-5 minutes.
+
+image: atlassian/default-image:4
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Trivy Filesystem Scan
+            image: aquasec/trivy:0.55.0
+            script:
+              - trivy fs --severity ${TRIVY_SEVERITY:-CRITICAL,HIGH} --ignore-unfixed --exit-code 1 .
+            artifacts:
+              - trivy-results.json
+
+        - step:
+            name: Semgrep SAST
+            image: semgrep/semgrep:1.92.0
+            script:
+              - |
+                semgrep scan \
+                  --config=${SEMGREP_RULES:-p/default} \
+                  --severity=${SEMGREP_SEVERITY:-WARNING} \
+                  --json --output=semgrep-results.json \
+                  --error
+            artifacts:
+              - semgrep-results.json
+
+        - step:
+            name: Checkov IaC Scan
+            image: bridgecrew/checkov:latest
+            script:
+              - |
+                checkov \
+                  --directory ${CHECKOV_DIRECTORY:-.} \
+                  --framework ${CHECKOV_FRAMEWORK:-all} \
+                  --download-external-modules true \
+                  --output cli --output sarif \
+                  --output-file-path checkov-sarif.json
+            artifacts:
+              - checkov-sarif.json
+
+  pull-requests:
+    '**':
+      - parallel:
+          - step:
+              name: Trivy Filesystem Scan (PR)
+              image: aquasec/trivy:0.55.0
+              script:
+                - trivy fs --severity ${TRIVY_SEVERITY:-CRITICAL,HIGH} --ignore-unfixed --exit-code 1 .
+
+          - step:
+              name: Semgrep SAST (PR)
+              image: semgrep/semgrep:1.92.0
+              script:
+                - semgrep scan --config=${SEMGREP_RULES:-p/default} --severity=${SEMGREP_SEVERITY:-WARNING} --error
+
+          - step:
+              name: Checkov IaC Scan (PR)
+              image: bridgecrew/checkov:latest
+              script:
+                - checkov --directory . --framework all --download-external-modules true

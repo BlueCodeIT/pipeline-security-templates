@@ -1,0 +1,62 @@
+# Checkov IaC Scan — Bitbucket Pipelines Template
+#
+# Copy the block below into your bitbucket-pipelines.yml.
+
+# ───────────────────────────────────────────────────────────────
+# Quick start
+# ───────────────────────────────────────────────────────────────
+#
+# pipelines:
+#   default:
+#     - step:
+#         name: Checkov IaC Scan
+#         image: bridgecrew/checkov:latest
+#         script:
+#           - checkov --directory . --framework all --download-external-modules true
+#
+# ───────────────────────────────────────────────────────────────
+# Customizable version
+# ───────────────────────────────────────────────────────────────
+#
+# pipelines:
+#   default:
+#     - step:
+#         name: Checkov IaC Scan
+#         image: bridgecrew/checkov:latest
+#         script:
+#           - |
+#             ARGS="--directory ${CHECKOV_DIRECTORY:-.} --framework ${CHECKOV_FRAMEWORK:-all} --download-external-modules true"
+#             if [ -n "$CHECKOV_SKIP_CHECKS" ]; then
+#               ARGS="$ARGS --skip-check $CHECKOV_SKIP_CHECKS"
+#             fi
+#             if [ "$CHECKOV_SOFT_FAIL" = "true" ]; then
+#               ARGS="$ARGS --soft-fail"
+#             fi
+#             checkov $ARGS --output cli --output sarif --output-file-path checkov-sarif.json
+#         artifacts:
+#           - checkov-sarif.json
+#
+# Variables (set in Repository Settings → Repository Variables):
+#   CHECKOV_DIRECTORY    — Default: .
+#   CHECKOV_FRAMEWORK    — Default: all (e.g., terraform, kubernetes, dockerfile)
+#   CHECKOV_SKIP_CHECKS  — Comma-separated check IDs (e.g., CKV_AWS_18,CKV_K8S_43)
+#   CHECKOV_SOFT_FAIL    — true to report without failing
+
+# Reference YAML for copy-paste:
+definitions:
+  steps:
+    - step: &checkov-scan
+        name: Checkov IaC Scan
+        image: bridgecrew/checkov:latest
+        script:
+          - |
+            ARGS="--directory ${CHECKOV_DIRECTORY:-.} --framework ${CHECKOV_FRAMEWORK:-all} --download-external-modules true"
+            if [ -n "$CHECKOV_SKIP_CHECKS" ]; then
+              ARGS="$ARGS --skip-check $CHECKOV_SKIP_CHECKS"
+            fi
+            if [ "$CHECKOV_SOFT_FAIL" = "true" ]; then
+              ARGS="$ARGS --soft-fail"
+            fi
+            checkov $ARGS --output cli --output sarif --output-file-path checkov-sarif.json
+        artifacts:
+          - checkov-sarif.json

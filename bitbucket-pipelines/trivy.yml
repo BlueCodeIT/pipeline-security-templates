@@ -1,0 +1,78 @@
+# Trivy Container Scan — Bitbucket Pipelines Template
+#
+# Bitbucket Pipelines doesn't support remote includes the way GitLab does.
+# Copy the relevant blocks below into your bitbucket-pipelines.yml.
+#
+# This template provides three integration patterns:
+#   1. Direct image scan (you provide a pre-built image)
+#   2. Build-then-scan (build from Dockerfile, then scan)
+#   3. Filesystem scan (no Docker required — scans dependencies in repo)
+
+# ───────────────────────────────────────────────────────────────
+# Pattern 1 — Scan a pre-built image
+# ───────────────────────────────────────────────────────────────
+#
+# Add to your bitbucket-pipelines.yml:
+#
+# pipelines:
+#   default:
+#     - step:
+#         name: Trivy Container Scan
+#         image: aquasec/trivy:0.55.0
+#         script:
+#           - trivy image --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 ${IMAGE_REF}
+#         # Required: set IMAGE_REF in Repository Variables
+#
+# ───────────────────────────────────────────────────────────────
+# Pattern 2 — Build Dockerfile, then scan
+# ───────────────────────────────────────────────────────────────
+#
+# pipelines:
+#   default:
+#     - step:
+#         name: Build & Scan
+#         services:
+#           - docker
+#         script:
+#           - docker build -t scan-target:latest .
+#           - pipe: aquasecurity/trivy-pipe:1.0.0
+#             variables:
+#               IMAGE_REF: 'scan-target:latest'
+#               SEVERITY: 'CRITICAL,HIGH'
+#               IGNORE_UNFIXED: 'true'
+#               EXIT_CODE: '1'
+#
+# ───────────────────────────────────────────────────────────────
+# Pattern 3 — Filesystem scan (no Docker, fastest)
+# ───────────────────────────────────────────────────────────────
+#
+# pipelines:
+#   default:
+#     - step:
+#         name: Trivy Filesystem Scan
+#         image: aquasec/trivy:0.55.0
+#         script:
+#           - trivy fs --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 .
+#
+# Variables you can use (set in Repository Settings → Repository Variables):
+#   IMAGE_REF       — Image to scan (Pattern 1)
+#   TRIVY_SEVERITY  — Default: CRITICAL,HIGH
+
+# Reference YAML for copy-paste:
+definitions:
+  steps:
+    - step: &trivy-image-scan
+        name: Trivy Container Scan
+        image: aquasec/trivy:0.55.0
+        script:
+          - trivy image --severity ${TRIVY_SEVERITY:-CRITICAL,HIGH} --ignore-unfixed --exit-code 1 ${IMAGE_REF}
+        artifacts:
+          - trivy-results.json
+
+    - step: &trivy-fs-scan
+        name: Trivy Filesystem Scan
+        image: aquasec/trivy:0.55.0
+        script:
+          - trivy fs --severity ${TRIVY_SEVERITY:-CRITICAL,HIGH} --ignore-unfixed --exit-code 1 .
+        artifacts:
+          - trivy-results.json

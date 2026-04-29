@@ -1,0 +1,81 @@
+# Full Security Stack + Deployment Guard — Bitbucket Pipelines
+#
+# Get an API key: https://www.bluecodeit.com/signup
+# Set GUARD_API_KEY in: Repository Settings → Repository Variables (secured)
+
+image: atlassian/default-image:4
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Trivy Filesystem Scan
+            image: aquasec/trivy:0.55.0
+            script:
+              - trivy fs --severity ${TRIVY_SEVERITY:-CRITICAL,HIGH} --ignore-unfixed --exit-code 1 .
+
+        - step:
+            name: Semgrep SAST
+            image: semgrep/semgrep:1.92.0
+            script:
+              - semgrep scan --config=${SEMGREP_RULES:-p/default} --severity=${SEMGREP_SEVERITY:-WARNING} --error
+
+        - step:
+            name: Checkov IaC Scan
+            image: bridgecrew/checkov:latest
+            script:
+              - checkov --directory . --framework all --download-external-modules true
+
+    - step:
+        name: Deployment Guard Risk Score
+        image: curlimages/curl:8.10.0
+        clone:
+          depth: 2
+        script:
+          - |
+            if [ -z "$GUARD_API_KEY" ]; then
+              echo "⚠️  GUARD_API_KEY not set — skipping Deployment Guard."
+              echo "Get a free API key: https://www.bluecodeit.com/signup"
+              exit 0
+            fi
+
+            DIFF_LINES_ADDED=$(git diff HEAD~1 HEAD --shortstat 2>/dev/null | grep -oP '\d+(?= insertion)' || echo "0")
+            DIFF_LINES_REMOVED=$(git diff HEAD~1 HEAD --shortstat 2>/dev/null | grep -oP '\d+(?= deletion)' || echo "0")
+            DIFF_FILES_CHANGED=$(git diff HEAD~1 HEAD --name-only 2>/dev/null | wc -l || echo "0")
+
+            RESPONSE=$(curl -s -X POST "https://api.bluecodeit.com/analyze" \
+              -H "Content-Type: application/json" \
+              -H "X-API-Key: $GUARD_API_KEY" \
+              -d "{
+                \"repo\": \"$BITBUCKET_REPO_FULL_NAME\",
+                \"branch\": \"$BITBUCKET_BRANCH\",
+                \"commit_sha\": \"$BITBUCKET_COMMIT\",
+                \"diff_lines_added\": ${DIFF_LINES_ADDED:-0},
+                \"diff_lines_removed\": ${DIFF_LINES_REMOVED:-0},
+                \"diff_files_changed\": ${DIFF_FILES_CHANGED:-0}
+              }")
+
+            SCORE=$(echo "$RESPONSE" | grep -o '"score":[0-9]*' | cut -d':' -f2)
+            VERDICT=$(echo "$RESPONSE" | grep -o '"verdict":"[^"]*"' | cut -d'"' -f4)
+            STATUS=$(echo "$RESPONSE" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+
+            echo "═══════════════════════════════════════"
+            echo "🛡️  Deployment Guard"
+            echo "═══════════════════════════════════════"
+            echo "Score:   $SCORE/100"
+            echo "Verdict: $VERDICT"
+            echo "Status:  $STATUS"
+            echo "═══════════════════════════════════════"
+            echo "Dashboard: https://www.bluecodeit.com/dashboard"
+
+            if [ "$STATUS" = "BLOCKED" ]; then
+              echo "❌ Deployment BLOCKED by risk score."
+              exit 1
+            fi
+
+            if [ "$STATUS" = "WARN" ] && [ "${GUARD_FAIL_ON_WARN:-false}" = "true" ]; then
+              echo "⚠️  Deployment WARNED and fail-on-warn is enabled."
+              exit 1
+            fi
+
+            echo "✅ Deployment risk acceptable."

@@ -1,0 +1,53 @@
+# Semgrep SAST Scan — Bitbucket Pipelines Template
+#
+# Copy the block below into your bitbucket-pipelines.yml.
+
+# ───────────────────────────────────────────────────────────────
+# Quick start
+# ───────────────────────────────────────────────────────────────
+#
+# pipelines:
+#   default:
+#     - step:
+#         name: Semgrep SAST
+#         image: semgrep/semgrep:1.92.0
+#         script:
+#           - semgrep scan --config=p/default --severity=WARNING --error
+#
+# ───────────────────────────────────────────────────────────────
+# Customizable version
+# ───────────────────────────────────────────────────────────────
+#
+# pipelines:
+#   default:
+#     - step:
+#         name: Semgrep SAST
+#         image: semgrep/semgrep:1.92.0
+#         script:
+#           - semgrep scan
+#               --config=${SEMGREP_RULES:-p/default}
+#               --severity=${SEMGREP_SEVERITY:-WARNING}
+#               --json --output=semgrep-results.json
+#               --error
+#         artifacts:
+#           - semgrep-results.json
+#
+# Variables (set in Repository Settings → Repository Variables):
+#   SEMGREP_RULES     — Default: p/default. Try: p/security-audit, p/owasp-top-ten, auto
+#   SEMGREP_SEVERITY  — Default: WARNING. Options: ERROR, WARNING, INFO
+
+# Reference YAML for copy-paste:
+definitions:
+  steps:
+    - step: &semgrep-scan
+        name: Semgrep SAST
+        image: semgrep/semgrep:1.92.0
+        script:
+          - |
+            semgrep scan \
+              --config=${SEMGREP_RULES:-p/default} \
+              --severity=${SEMGREP_SEVERITY:-WARNING} \
+              --json --output=semgrep-results.json \
+              --error
+        artifacts:
+          - semgrep-results.json
