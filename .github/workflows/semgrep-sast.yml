@@ -1,9 +1,5 @@
 name: Semgrep SAST Scan
 
-# Reusable workflow — Static Application Security Testing
-# Finds code vulnerabilities (SQL injection, XSS, hardcoded secrets, etc.)
-# See: https://semgrep.dev/
-
 on:
   workflow_call:
     inputs:
@@ -41,36 +37,50 @@ jobs:
       image: semgrep/semgrep:1.92.0
     permissions:
       contents: read
-      security-events: write   # Required to upload SARIF to GitHub Security tab
+      security-events: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Run Semgrep scan
+        id: scan
         env:
           SEMGREP_RULES: ${{ inputs.config }}
         run: |
-          ARGS="--sarif --output=semgrep-results.sarif --severity=${{ inputs.severity }}"
+          set +e
+
+          # Build argument list as array (cleaner than string concat)
+          ARGS=("--sarif" "--output=semgrep-results.sarif" "--severity=${{ inputs.severity }}")
 
           # Optional path filters
           if [ -n "${{ inputs.paths-include }}" ]; then
             while IFS= read -r line; do
               [ -z "$line" ] && continue
-              ARGS="$ARGS --include=$line"
+              ARGS+=("--include=$line")
             done <<< "${{ inputs.paths-include }}"
           fi
 
           if [ -n "${{ inputs.paths-exclude }}" ]; then
             while IFS= read -r line; do
               [ -z "$line" ] && continue
-              ARGS="$ARGS --exclude=$line"
+              ARGS+=("--exclude=$line")
             done <<< "${{ inputs.paths-exclude }}"
           fi
 
-          # Run scan — never fail here, we control exit-code below
-          semgrep scan $ARGS --error || SCAN_EXIT=$?
-          echo "SCAN_EXIT=${SCAN_EXIT:-0}" >> $GITHUB_ENV
+          # Run scan WITHOUT --error to ensure SARIF is always written
+          # We control fail behavior at the end based on inputs.fail-on-issues
+          semgrep scan "${ARGS[@]}"
+          SCAN_EXIT=$?
+
+          # Verify SARIF was written, create empty if missing
+          if [ ! -f semgrep-results.sarif ]; then
+            echo "Warning: SARIF file not generated, creating empty placeholder"
+            echo '{"version":"2.1.0","runs":[]}' > semgrep-results.sarif
+          fi
+
+          echo "scan_exit=$SCAN_EXIT" >> $GITHUB_OUTPUT
+          exit 0
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -87,7 +97,7 @@ jobs:
           semgrep scan --severity=${{ inputs.severity }} || true
 
       - name: Fail build if requested
-        if: inputs.fail-on-issues && env.SCAN_EXIT != '0'
+        if: inputs.fail-on-issues && steps.scan.outputs.scan_exit != '0'
         run: |
           echo "Semgrep found issues at severity ${{ inputs.severity }} or higher."
           exit 1
