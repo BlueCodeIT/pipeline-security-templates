@@ -40,6 +40,9 @@ jobs:
       security-events: write
 
     steps:
+      - name: Mark workspace as safe for git
+        run: git config --global --add safe.directory '*'
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -47,30 +50,36 @@ jobs:
         id: scan
         env:
           SEMGREP_RULES: ${{ inputs.config }}
+          PATHS_INCLUDE: ${{ inputs.paths-include }}
+          PATHS_EXCLUDE: ${{ inputs.paths-exclude }}
+          SEVERITY: ${{ inputs.severity }}
+        shell: sh
         run: |
           set +e
 
-          # Build argument list as array (cleaner than string concat)
-          ARGS=("--sarif" "--output=semgrep-results.sarif" "--severity=${{ inputs.severity }}")
+          # Build extra args (sh-compatible, no bash arrays)
+          EXTRA_ARGS=""
 
-          # Optional path filters
-          if [ -n "${{ inputs.paths-include }}" ]; then
-            while IFS= read -r line; do
+          if [ -n "$PATHS_INCLUDE" ]; then
+            echo "$PATHS_INCLUDE" | while IFS= read -r line; do
               [ -z "$line" ] && continue
-              ARGS+=("--include=$line")
-            done <<< "${{ inputs.paths-include }}"
+              EXTRA_ARGS="$EXTRA_ARGS --include=$line"
+            done
           fi
 
-          if [ -n "${{ inputs.paths-exclude }}" ]; then
-            while IFS= read -r line; do
+          if [ -n "$PATHS_EXCLUDE" ]; then
+            echo "$PATHS_EXCLUDE" | while IFS= read -r line; do
               [ -z "$line" ] && continue
-              ARGS+=("--exclude=$line")
-            done <<< "${{ inputs.paths-exclude }}"
+              EXTRA_ARGS="$EXTRA_ARGS --exclude=$line"
+            done
           fi
 
           # Run scan WITHOUT --error to ensure SARIF is always written
-          # We control fail behavior at the end based on inputs.fail-on-issues
-          semgrep scan "${ARGS[@]}"
+          semgrep scan \
+            --sarif \
+            --output=semgrep-results.sarif \
+            --severity="$SEVERITY" \
+            $EXTRA_ARGS
           SCAN_EXIT=$?
 
           # Verify SARIF was written, create empty if missing
@@ -79,7 +88,7 @@ jobs:
             echo '{"version":"2.1.0","runs":[]}' > semgrep-results.sarif
           fi
 
-          echo "scan_exit=$SCAN_EXIT" >> $GITHUB_OUTPUT
+          echo "scan_exit=$SCAN_EXIT" >> "$GITHUB_OUTPUT"
           exit 0
 
       - name: Upload SARIF to GitHub Security
@@ -93,8 +102,10 @@ jobs:
         if: always()
         env:
           SEMGREP_RULES: ${{ inputs.config }}
+          SEVERITY: ${{ inputs.severity }}
+        shell: sh
         run: |
-          semgrep scan --severity=${{ inputs.severity }} || true
+          semgrep scan --severity="$SEVERITY" || true
 
       - name: Fail build if requested
         if: inputs.fail-on-issues && steps.scan.outputs.scan_exit != '0'
