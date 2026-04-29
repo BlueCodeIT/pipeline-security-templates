@@ -1,0 +1,40 @@
+# ⚠️ Demo Kubernetes manifest — has intentional issues for Checkov to find.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-app
+  namespace: default
+spec:
+  replicas: 1   # CKV_K8S_43: should be >= 2 for HA
+  selector:
+    matchLabels:
+      app: nodejs-app
+  template:
+    metadata:
+      labels:
+        app: nodejs-app
+    spec:
+      containers:
+        - name: app
+          image: nodejs-app:latest   # CKV_K8S_43: should pin to a digest
+          ports:
+            - containerPort: 3000
+          # CKV_K8S_10/11/12/13: missing CPU/memory limits and requests
+          # CKV_K8S_20: should run as non-root
+          # CKV_K8S_22: should have readOnlyRootFilesystem
+          # CKV_K8S_23: should have allowPrivilegeEscalation: false
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://demo:demo@db:5432/demo"   # CKV_K8S_35: secret in plain text
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs-app
+spec:
+  selector:
+    app: nodejs-app
+  ports:
+    - port: 80
+      targetPort: 3000

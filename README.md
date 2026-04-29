@@ -1,21 +1,12 @@
 # 🔒 Pipeline Security Templates
 
 **Production-ready security scan templates for GitHub Actions, GitLab CI, and Bitbucket Pipelines.**  
-Plug-and-play CI snippets to add Trivy, Semgrep, and Checkov to your DevSecOps pipeline in minutes.
+Add Trivy, Semgrep, and Checkov to your CI pipeline in minutes — copy-paste ready.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-supported-blue?logo=github-actions)]()
-[![GitLab CI](https://img.shields.io/badge/GitLab_CI-supported-orange?logo=gitlab)]()
-[![Bitbucket Pipelines](https://img.shields.io/badge/Bitbucket-supported-blue?logo=bitbucket)]()
-
----
-
-## Battle-tested
-
-These templates run in production on:
-
-- [Deployment Guard](https://www.bluecodeit.com/deployment-guard) — AI-powered deployment risk scoring
-- [BlueCode IT](https://www.bluecodeit.com) — DevOps tools for teams of 5–50
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-supported-blue?logo=github-actions)](./github-actions/)
+[![GitLab CI](https://img.shields.io/badge/GitLab_CI-supported-orange?logo=gitlab)](./gitlab-ci/)
+[![Bitbucket Pipelines](https://img.shields.io/badge/Bitbucket-supported-blue?logo=bitbucket)](./bitbucket-pipelines/)
 
 ---
 
@@ -24,7 +15,7 @@ These templates run in production on:
 | Tool | Purpose | Speed |
 |---|---|---|
 | **Trivy** | Container & dependency vulnerability scanning | <30s |
-| **Semgrep** | SAST — finds code vulnerabilities (SQLi, XSS, secrets) | <2min |
+| **Semgrep** | SAST — finds code vulnerabilities (SQLi, XSS, hardcoded secrets) | <2min |
 | **Checkov** | IaC scanning — Terraform, Kubernetes, CloudFormation | <1min |
 
 All templates run in parallel by default. No external services required.
@@ -35,40 +26,93 @@ All templates run in parallel by default. No external services required.
 
 ### GitHub Actions
 
-Copy `github-actions/full-stack.yml` to `.github/workflows/security.yml` in your repo:
-
-\`\`\`yaml
-name: Security Scans
+```yaml
+# .github/workflows/security.yml
+name: Security
 on: [push, pull_request]
 
 jobs:
-  trivy:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
-  semgrep:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@main
-  checkov:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@main
-\`\`\`
+  security:
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@main
+```
 
-That's it. Push and watch your pipeline.
+→ Findings land in your repo's **Security tab**.
 
-### GitLab CI / Bitbucket
+### GitLab CI
 
-See [`gitlab-ci/`](./gitlab-ci/) and [`bitbucket-pipelines/`](./bitbucket-pipelines/) for ready-to-use templates.
+```yaml
+# .gitlab-ci.yml
+include:
+  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/full-stack.yml'
+
+stages:
+  - security
+
+trivy_scan:
+  extends: .trivy_template
+  stage: security
+
+semgrep_scan:
+  extends: .semgrep_template
+  stage: security
+
+checkov_scan:
+  extends: .checkov_template
+  stage: security
+```
+
+### Bitbucket Pipelines
+
+Bitbucket doesn't support remote includes. Copy [`bitbucket-pipelines/full-stack.yml`](./bitbucket-pipelines/full-stack.yml) into your `bitbucket-pipelines.yml`.
 
 ---
 
-## Bonus: Add deployment risk scoring
+## Bonus: deployment risk scoring
 
-Want a single risk score (0–100) before every deployment? Try [Deployment Guard](https://www.bluecodeit.com/deployment-guard) — analyzes diff complexity, K8s changes, dependency risk, and incident history. Free tier: 30 analyses/month.
+Want a single 0–100 risk score before every deployment? Try [Deployment Guard](https://www.bluecodeit.com/deployment-guard) — analyzes diff complexity, K8s changes, dependency risk, and incident history. **Free tier: 30 analyses/month, no credit card.**
 
-\`\`\`yaml
-- uses: BlueCodeIT/deployment-guard-action@v1
-  with:
-    api-key: ${{ secrets.GUARD_API_KEY }}
-\`\`\`
+```yaml
+jobs:
+  security:
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@main
+    secrets:
+      guard-api-key: ${{ secrets.GUARD_API_KEY }}
+```
 
-See [`github-actions/full-stack-with-guard.yml`](./github-actions/full-stack-with-guard.yml) for the complete pipeline.
+[Get a free API key →](https://www.bluecodeit.com/signup)
+
+---
+
+## Battle-tested
+
+These templates run in production on:
+
+- **[Deployment Guard](https://www.bluecodeit.com/deployment-guard)** — AI-powered deployment risk scoring
+- **[BlueCode IT](https://www.bluecodeit.com)** — DevOps tools for teams of 5–50
+
+We use them ourselves before recommending them to you.
+
+---
+
+## Documentation
+
+- [Trivy → container & dependency CVEs](./docs/trivy.md)
+- [Semgrep → static code analysis](./docs/semgrep.md)
+- [Checkov → infrastructure as code](./docs/checkov.md)
+- [Comparison: which tool when?](./docs/comparison.md)
+- [GitLab CI setup guide](./docs/gitlab-ci.md)
+- [Bitbucket Pipelines setup guide](./docs/bitbucket-pipelines.md)
+- [Deployment Guard integration](./docs/deployment-guard.md)
+
+---
+
+## Examples
+
+Working example repos with templates configured:
+
+- **[Node.js Express API](./examples/nodejs-app/)** — Express + Postgres + Kubernetes manifest. Includes intentional vulnerabilities for demo purposes.
+
+More examples coming soon — PRs welcome.
 
 ---
 
@@ -81,36 +125,35 @@ Most DevSecOps tools require:
 
 These templates skip all that. Open-source tools, copy-paste config, no signup.
 
-Built by [BlueCode IT](https://www.bluecodeit.com) — a focus on DevOps tooling for teams of 5–50.
+Built by [BlueCode IT](https://www.bluecodeit.com) — focused on DevOps tooling for teams of 5–50.
 
 ---
 
-## Examples
+## Versioning
 
-Real example repos with these templates configured:
+We follow [SemVer](https://semver.org/). Pin to a release tag in production:
 
-- [Node.js app](./examples/nodejs-app/) — Express API with Trivy + Semgrep
-- [Python FastAPI](./examples/python-fastapi/) — Python service with full stack
-- [Go service](./examples/golang-service/) — Go microservice
-- [Terraform AWS](./examples/terraform-aws/) — IaC with Checkov
+```yaml
+uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1.0.0
+```
 
----
+`@main` is the dev branch — fine for testing, **don't use in production**.
 
-## Tools documentation
-
-- [Trivy → Container & filesystem scanning](./docs/trivy.md)
-- [Semgrep → Static analysis](./docs/semgrep.md)
-- [Checkov → Infrastructure as Code](./docs/checkov.md)
-- [Comparison: which tool when?](./docs/comparison.md)
-- [Deployment Guard → Risk scoring](./docs/deployment-guard.md)
+[See releases →](../../releases)
 
 ---
 
 ## Contributing
 
-PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+PRs welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Issues, questions, suggestions: [open an issue](../../issues) or email [info@bluecodeit.com](mailto:info@bluecodeit.com).
+
+---
+
+## Security
+
+Found a vulnerability in these templates or in the way they're configured? Please follow our [security policy](./SECURITY.md) — don't open a public issue.
 
 ---
 
