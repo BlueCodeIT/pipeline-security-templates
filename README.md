@@ -10,6 +10,15 @@ Plug-and-play CI snippets to add Trivy, Semgrep, and Checkov to your DevSecOps p
 
 ---
 
+## Battle-tested
+
+These templates run in production on:
+
+- [Deployment Guard](https://www.bluecodeit.com/deployment-guard) — AI-powered deployment risk scoring
+- [BlueCode IT](https://www.bluecodeit.com) — DevOps tools for teams of 5–50
+
+---
+
 ## What's included
 
 | Tool | Purpose | Speed |
