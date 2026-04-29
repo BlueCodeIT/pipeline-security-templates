@@ -1,0 +1,76 @@
+# Trivy Container Scan — GitLab CI Template
+#
+# Usage in your .gitlab-ci.yml:
+#
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/trivy.yml'
+#
+#   trivy_scan:
+#     extends: .trivy_template
+#     # Optional overrides:
+#     # variables:
+#     #   TRIVY_IMAGE: 'registry.example.com/myapp:latest'
+#     #   TRIVY_SEVERITY: 'CRITICAL,HIGH,MEDIUM'
+
+.trivy_template:
+  stage: test
+  image:
+    name: aquasec/trivy:0.55.0
+    entrypoint: [""]
+  variables:
+    TRIVY_IMAGE: ""              # Empty = build from Dockerfile
+    TRIVY_DOCKERFILE: "Dockerfile"
+    TRIVY_SEVERITY: "CRITICAL,HIGH"
+    TRIVY_FAIL_ON_ISSUES: "true"
+    TRIVY_IGNORE_UNFIXED: "true"
+    TRIVY_NO_PROGRESS: "true"
+    TRIVY_CACHE_DIR: ".trivycache/"
+  cache:
+    paths:
+      - .trivycache/
+  before_script:
+    - |
+      if [ -z "$TRIVY_IMAGE" ]; then
+        echo "Building image from $TRIVY_DOCKERFILE..."
+        # GitLab Runner needs Docker-in-Docker for builds
+        # See: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+        export TRIVY_IMAGE="scan-target:latest"
+        docker build -t "$TRIVY_IMAGE" -f "$TRIVY_DOCKERFILE" . || {
+          echo "❌ Image build failed. If using GitLab.com shared runners, you need Docker-in-Docker."
+          exit 1
+        }
+      fi
+  script:
+    - |
+      EXIT_CODE_FLAG="--exit-code 0"
+      if [ "$TRIVY_FAIL_ON_ISSUES" = "true" ]; then
+        EXIT_CODE_FLAG="--exit-code 1"
+      fi
+
+      IGNORE_UNFIXED_FLAG=""
+      if [ "$TRIVY_IGNORE_UNFIXED" = "true" ]; then
+        IGNORE_UNFIXED_FLAG="--ignore-unfixed"
+      fi
+
+      # Table output for logs
+      trivy image \
+        --severity "$TRIVY_SEVERITY" \
+        $IGNORE_UNFIXED_FLAG \
+        --format table \
+        "$TRIVY_IMAGE"
+
+      # JSON output for GitLab artifact (Container Scanning report format)
+      trivy image \
+        --severity "$TRIVY_SEVERITY" \
+        $IGNORE_UNFIXED_FLAG \
+        --format template \
+        --template "@/contrib/gitlab.tpl" \
+        --output gl-container-scanning-report.json \
+        $EXIT_CODE_FLAG \
+        "$TRIVY_IMAGE"
+  artifacts:
+    when: always
+    reports:
+      container_scanning: gl-container-scanning-report.json
+    expire_in: 1 week
+  allow_failure: false

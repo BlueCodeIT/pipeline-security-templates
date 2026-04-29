@@ -1,0 +1,27 @@
+# Full Security Stack — GitLab CI Template
+# Trivy + Semgrep + Checkov in parallel
+#
+# Usage in your .gitlab-ci.yml:
+#
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/full-stack.yml'
+#
+#   stages:
+#     - security
+#
+#   trivy_scan:
+#     extends: .trivy_template
+#     stage: security
+#
+#   semgrep_scan:
+#     extends: .semgrep_template
+#     stage: security
+#
+#   checkov_scan:
+#     extends: .checkov_template
+#     stage: security
+
+include:
+  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/trivy.yml'
+  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/semgrep.yml'
+  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/checkov.yml'

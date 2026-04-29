@@ -1,0 +1,55 @@
+# Checkov IaC Scan — GitLab CI Template
+#
+# Usage in your .gitlab-ci.yml:
+#
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/checkov.yml'
+#
+#   checkov_scan:
+#     extends: .checkov_template
+
+.checkov_template:
+  stage: test
+  image:
+    name: bridgecrew/checkov:latest
+    entrypoint: [""]
+  variables:
+    CHECKOV_DIRECTORY: "."
+    CHECKOV_FRAMEWORK: "all"
+    CHECKOV_SOFT_FAIL: "false"
+    CHECKOV_SKIP_CHECKS: ""
+    CHECKOV_CHECK: ""
+  script:
+    - |
+      ARGS="--directory $CHECKOV_DIRECTORY --framework $CHECKOV_FRAMEWORK --download-external-modules true"
+
+      if [ -n "$CHECKOV_SKIP_CHECKS" ]; then
+        ARGS="$ARGS --skip-check $CHECKOV_SKIP_CHECKS"
+      fi
+
+      if [ -n "$CHECKOV_CHECK" ]; then
+        ARGS="$ARGS --check $CHECKOV_CHECK"
+      fi
+
+      if [ "$CHECKOV_SOFT_FAIL" = "true" ]; then
+        ARGS="$ARGS --soft-fail"
+      fi
+
+      # CLI output for logs
+      checkov $ARGS --output cli || CHECKOV_EXIT=$?
+
+      # JUnit XML for GitLab test reports
+      checkov $ARGS --output junitxml --output-file-path checkov-junit.xml || true
+
+      # SARIF output as artifact
+      checkov $ARGS --output sarif --output-file-path checkov-sarif.json || true
+
+      exit ${CHECKOV_EXIT:-0}
+  artifacts:
+    when: always
+    reports:
+      junit: checkov-junit.xml
+    paths:
+      - checkov-sarif.json
+    expire_in: 1 week
+  allow_failure: false

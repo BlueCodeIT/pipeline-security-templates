@@ -1,0 +1,98 @@
+# Full Security Stack + Deployment Guard — GitLab CI Template
+#
+# Get an API key: https://www.bluecodeit.com/signup
+#
+# Usage in your .gitlab-ci.yml:
+#
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/full-stack-with-guard.yml'
+#
+#   stages:
+#     - security
+#     - risk
+#
+#   trivy_scan:
+#     extends: .trivy_template
+#     stage: security
+#
+#   semgrep_scan:
+#     extends: .semgrep_template
+#     stage: security
+#
+#   checkov_scan:
+#     extends: .checkov_template
+#     stage: security
+#
+#   deployment_guard:
+#     extends: .deployment_guard_template
+#     stage: risk
+#
+# Required secret variable in GitLab:
+#   GUARD_API_KEY (Settings → CI/CD → Variables)
+
+include:
+  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/trivy.yml'
+  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/semgrep.yml'
+  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/checkov.yml'
+
+.deployment_guard_template:
+  stage: risk
+  image: curlimages/curl:8.10.0
+  variables:
+    GUARD_API_URL: "https://api.bluecodeit.com/analyze"
+    GUARD_FAIL_ON_WARN: "false"
+  before_script:
+    - |
+      if [ -z "$GUARD_API_KEY" ]; then
+        echo "⚠️  GUARD_API_KEY variable not set — skipping Deployment Guard."
+        echo "Get a free API key: https://www.bluecodeit.com/signup"
+        exit 0
+      fi
+  script:
+    - |
+      # Calculate diff stats
+      git fetch --depth 2 origin "$CI_COMMIT_REF_NAME" 2>/dev/null || true
+      DIFF_LINES_ADDED=$(git diff HEAD~1 HEAD --stat | tail -1 | awk '{print $4}' || echo "0")
+      DIFF_LINES_REMOVED=$(git diff HEAD~1 HEAD --stat | tail -1 | awk '{print $6}' || echo "0")
+      DIFF_FILES_CHANGED=$(git diff HEAD~1 HEAD --name-only | wc -l || echo "0")
+
+      # Send to Deployment Guard
+      RESPONSE=$(curl -s -X POST "$GUARD_API_URL" \
+        -H "Content-Type: application/json" \
+        -H "X-API-Key: $GUARD_API_KEY" \
+        -d "{
+          \"repo\": \"$CI_PROJECT_PATH\",
+          \"branch\": \"$CI_COMMIT_REF_NAME\",
+          \"commit_sha\": \"$CI_COMMIT_SHA\",
+          \"diff_lines_added\": ${DIFF_LINES_ADDED:-0},
+          \"diff_lines_removed\": ${DIFF_LINES_REMOVED:-0},
+          \"diff_files_changed\": ${DIFF_FILES_CHANGED:-0}
+        }")
+
+      # Parse score and verdict
+      SCORE=$(echo "$RESPONSE" | grep -o '"score":[0-9]*' | cut -d':' -f2)
+      VERDICT=$(echo "$RESPONSE" | grep -o '"verdict":"[^"]*"' | cut -d'"' -f4)
+      STATUS=$(echo "$RESPONSE" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+
+      echo "═══════════════════════════════════════"
+      echo "🛡️  Deployment Guard"
+      echo "═══════════════════════════════════════"
+      echo "Score:   $SCORE/100"
+      echo "Verdict: $VERDICT"
+      echo "Status:  $STATUS"
+      echo "═══════════════════════════════════════"
+      echo "Dashboard: https://www.bluecodeit.com/dashboard"
+
+      # Exit logic
+      if [ "$STATUS" = "BLOCKED" ]; then
+        echo "❌ Deployment BLOCKED by risk score."
+        exit 1
+      fi
+
+      if [ "$STATUS" = "WARN" ] && [ "$GUARD_FAIL_ON_WARN" = "true" ]; then
+        echo "⚠️  Deployment WARNED and fail-on-warn is enabled."
+        exit 1
+      fi
+
+      echo "✅ Deployment risk acceptable."
+  allow_failure: false

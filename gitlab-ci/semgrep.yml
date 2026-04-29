@@ -1,0 +1,45 @@
+# Semgrep SAST Scan — GitLab CI Template
+#
+# Usage in your .gitlab-ci.yml:
+#
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/semgrep.yml'
+#
+#   semgrep_scan:
+#     extends: .semgrep_template
+
+.semgrep_template:
+  stage: test
+  image: semgrep/semgrep:1.92.0
+  variables:
+    SEMGREP_RULES: "p/default"
+    SEMGREP_SEVERITY: "WARNING"
+    SEMGREP_FAIL_ON_ISSUES: "true"
+    SEMGREP_PATHS_EXCLUDE: ""    # Newline-separated, e.g. "tests/\nvendor/"
+  script:
+    - |
+      ARGS="scan --severity=$SEMGREP_SEVERITY --gitlab-sast --output gl-sast-report.json"
+
+      # Add path excludes
+      if [ -n "$SEMGREP_PATHS_EXCLUDE" ]; then
+        echo "$SEMGREP_PATHS_EXCLUDE" | while IFS= read -r line; do
+          [ -z "$line" ] && continue
+          ARGS="$ARGS --exclude=$line"
+        done
+      fi
+
+      # Run scan with table output for logs
+      semgrep scan --severity=$SEMGREP_SEVERITY || true
+
+      # Run again with GitLab SAST format
+      if [ "$SEMGREP_FAIL_ON_ISSUES" = "true" ]; then
+        semgrep $ARGS --error
+      else
+        semgrep $ARGS
+      fi
+  artifacts:
+    when: always
+    reports:
+      sast: gl-sast-report.json
+    expire_in: 1 week
+  allow_failure: false
