@@ -1,0 +1,67 @@
+name: Checkov IaC Scan
+
+# Reusable workflow — Infrastructure as Code security scanning
+# Scans: Terraform, CloudFormation, Kubernetes, Helm, ARM, Dockerfile, GitHub Actions
+# See: https://www.checkov.io/
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        description: 'Directory to scan. Default: repo root.'
+        required: false
+        type: string
+        default: '.'
+      framework:
+        description: 'Frameworks to scan (comma-separated): terraform,kubernetes,helm,cloudformation,dockerfile,github_actions,argo_workflows,arm,bicep,ansible,gitlab_ci,bitbucket_pipelines'
+        required: false
+        type: string
+        default: 'all'
+      soft-fail:
+        description: 'Report findings without failing the build'
+        required: false
+        type: boolean
+        default: false
+      skip-checks:
+        description: 'Comma-separated check IDs to skip (e.g. CKV_AWS_18,CKV_K8S_43)'
+        required: false
+        type: string
+        default: ''
+      check:
+        description: 'Run only specific checks (comma-separated check IDs)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  checkov:
+    name: Checkov IaC Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # Required for SARIF upload to GitHub Security tab
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: ${{ inputs.directory }}
+          framework: ${{ inputs.framework }}
+          soft_fail: ${{ inputs.soft-fail }}
+          skip_check: ${{ inputs.skip-checks }}
+          check: ${{ inputs.check }}
+          output_format: cli,sarif
+          output_file_path: console,checkov-results.sarif
+          download_external_modules: true
+          quiet: false
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'checkov-results.sarif'
+          category: checkov
