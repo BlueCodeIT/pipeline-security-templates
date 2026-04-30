@@ -91,7 +91,7 @@ on:
 jobs:
   trivy:
     if: inputs.skip-trivy == false
-    uses: ./.github/workflows/trivy-container-scan.yml
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
     with:
       image: ${{ inputs.trivy-image }}
       dockerfile: ${{ inputs.trivy-dockerfile }}
@@ -100,7 +100,7 @@ jobs:
 
   semgrep:
     if: inputs.skip-semgrep == false
-    uses: ./.github/workflows/semgrep-sast.yml
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@main
     with:
       config: ${{ inputs.semgrep-config }}
       severity: ${{ inputs.semgrep-severity }}
@@ -108,7 +108,7 @@ jobs:
 
   checkov:
     if: inputs.skip-checkov == false
-    uses: ./.github/workflows/checkov-iac.yml
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@main
     with:
       directory: ${{ inputs.checkov-directory }}
       framework: ${{ inputs.checkov-framework }}
@@ -116,35 +116,44 @@ jobs:
 
   deployment-guard:
     name: Deployment Guard Risk Score
-    if: inputs.skip-guard == false
     runs-on: ubuntu-latest
     needs: [trivy, semgrep, checkov]
     if: always() && inputs.skip-guard == false
+    permissions:
+      contents: read
     steps:
       - name: Check API key is set
+        id: check-key
         env:
           GUARD_API_KEY: ${{ secrets.guard-api-key }}
         run: |
           if [ -z "$GUARD_API_KEY" ]; then
             echo "⚠️  GUARD_API_KEY secret not set — skipping Deployment Guard."
             echo "Get a free API key: https://www.bluecodeit.com/signup"
-            exit 0
+            echo "key_set=false" >> $GITHUB_OUTPUT
+          else
+            echo "key_set=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout
-        if: env.GUARD_API_KEY != ''
+        if: steps.check-key.outputs.key_set == 'true'
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2   # Required for diff analysis
+          fetch-depth: 2
 
       - name: Run Deployment Guard
-        if: env.GUARD_API_KEY != ''
+        if: steps.check-key.outputs.key_set == 'true'
         uses: BlueCodeIT/deployment-guard-action@v1
         with:
           api-key: ${{ secrets.guard-api-key }}
-          fail-on-warn: ${{ inputs.guard-fail-on-warn }}
-
-  summary:
+          fail-on-blocked: ${{ inputs.guard-fail-on-warn }}
+          trivy-critical-cves: ${{ needs.trivy.outputs.critical_count || '0' }}
+          trivy-high-cves: ${{ needs.trivy.outputs.high_count || '0' }}
+          semgrep-findings: ${{ needs.semgrep.outputs.total_count || '0' }}
+          semgrep-high-severity: ${{ needs.semgrep.outputs.high_count || '0' }}
+          checkov-failed-checks: ${{ needs.checkov.outputs.total_count || '0' }}
+          checkov-critical-failures: ${{ needs.checkov.outputs.critical_count || '0' }}
+    summary:
     name: Security + Risk Summary
     runs-on: ubuntu-latest
     needs: [trivy, semgrep, checkov, deployment-guard]
