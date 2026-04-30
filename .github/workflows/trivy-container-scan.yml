@@ -52,7 +52,7 @@ jobs:
         run: docker build -t scan-target:latest -f ${{ inputs.dockerfile }} .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ inputs.image == '' && 'scan-target:latest' || inputs.image }}
           format: 'sarif'
