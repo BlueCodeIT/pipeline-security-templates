@@ -1,5 +1,4 @@
 name: Trivy Container Scan
-
 # Reusable workflow — call from your repo with `uses:`
 # See: https://docs.github.com/en/actions/using-workflows/reusing-workflows
 
@@ -31,6 +30,13 @@ on:
         required: false
         type: boolean
         default: true
+    outputs:
+      critical_count:
+        description: 'Number of CRITICAL CVEs (CVSS >= 9.0)'
+        value: ${{ jobs.trivy.outputs.critical_count }}
+      high_count:
+        description: 'Number of HIGH CVEs (CVSS 7.0-8.9)'
+        value: ${{ jobs.trivy.outputs.high_count }}
 
 jobs:
   trivy:
@@ -41,8 +47,7 @@ jobs:
       high_count: ${{ steps.parse.outputs.high_count }}
     permissions:
       contents: read
-      security-events: write   # Required to upload SARIF to GitHub Security tab
-
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,7 +84,7 @@ jobs:
             exit 0
           fi
           # Trivy SARIF: properties.security-severity = CVSS-Score (string)
-          # CRITICAL: >= 9.0, HIGH: 7.0–8.9
+          # CRITICAL: >= 9.0, HIGH: 7.0-8.9
           CRIT=$(jq '[.runs[0].results[]?
                       | (.properties."security-severity" // "0" | tonumber)
                       | select(. >= 9.0)] | length' trivy-results.sarif)
@@ -89,7 +94,7 @@ jobs:
           echo "critical_count=${CRIT:-0}" >> $GITHUB_OUTPUT
           echo "high_count=${HIGH:-0}" >> $GITHUB_OUTPUT
           echo "Trivy: $CRIT CRITICAL, $HIGH HIGH"
-          
+
       - name: Run Trivy (table output for logs)
         if: always()
         uses: aquasecurity/trivy-action@v0.36.0

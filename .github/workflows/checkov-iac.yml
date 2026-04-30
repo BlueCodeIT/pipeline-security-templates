@@ -1,5 +1,4 @@
 name: Checkov IaC Scan
-
 # Reusable workflow — Infrastructure as Code security scanning
 # Scans: Terraform, CloudFormation, Kubernetes, Helm, ARM, Dockerfile, GitHub Actions
 # See: https://www.checkov.io/
@@ -13,7 +12,7 @@ on:
         type: string
         default: '.'
       framework:
-        description: 'Frameworks to scan (comma-separated): terraform,kubernetes,helm,cloudformation,dockerfile,github_actions,argo_workflows,arm,bicep,ansible,gitlab_ci,bitbucket_pipelines'
+        description: 'Frameworks to scan (comma-separated)'
         required: false
         type: string
         default: 'all'
@@ -32,6 +31,13 @@ on:
         required: false
         type: string
         default: ''
+    outputs:
+      total_count:
+        description: 'Total number of failed Checkov checks'
+        value: ${{ jobs.checkov.outputs.total_count }}
+      critical_count:
+        description: 'Number of CRITICAL Checkov failures'
+        value: ${{ jobs.checkov.outputs.critical_count }}
 
 jobs:
   checkov:
@@ -42,8 +48,7 @@ jobs:
       critical_count: ${{ steps.parse.outputs.critical_count }}
     permissions:
       contents: read
-      security-events: write   # Required for SARIF upload to GitHub Security tab
-
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,6 +73,7 @@ jobs:
         with:
           sarif_file: 'checkov-results.sarif'
           category: checkov
+
       - name: Parse SARIF for Deployment Guard
         id: parse
         if: always()
