@@ -9,7 +9,11 @@ Add it to your existing security pipeline by using the `full-stack-with-guard.ym
 ~~~yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.0.0
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.1.1
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     secrets:
       guard-api-key: ${{ secrets.GUARD_API_KEY }}
 ~~~
@@ -23,14 +27,19 @@ jobs:
 
 ## How it works
 
-Deployment Guard analyzes four weighted factors:
+Deployment Guard analyzes up to **five adaptively weighted factors**:
 
-- **Diff complexity (30%)** — lines and files changed, scaled logarithmically
-- **Kubernetes risk (30%)** — manifest changes, Helm value bumps, ArgoCD sync status, single replica, missing PodDisruptionBudget
-- **Dependency risk (20%)** — count of dependency updates and major version bumps
-- **Incident history (20%)** — production incidents in the last 7 and 30 days
+- **Diff complexity** — lines and files changed, scaled logarithmically
+- **Kubernetes risk** — manifest changes, Helm value bumps, ArgoCD sync status, single replica, missing PodDisruptionBudget
+- **Dependency risk** — count of dependency updates and major version bumps
+- **Incident history** — production incidents in the last 7 and 30 days
+- **Pipeline findings** *(optional)* — CRITICAL/HIGH CVEs from Trivy, SAST findings from Semgrep, IaC failures from Checkov — automatically forwarded when using `full-stack-with-guard.yml`
 
-The factors are combined into a single 0–100 score with a verdict:
+The weighting is **adaptive** — repos without Kubernetes context or without pipeline scanners get the weights automatically redistributed. A frontend repo without K8s gets evaluated just as fairly as a full-stack backend with Helm and security scans.
+
+**Repo history as context:** On every analysis, the current score is matched against the median and trend of recent analyses for the same repository. If the score is significantly above the repo's median, it nudges up (max +5 points). If it fits the usual pattern, it can soften by a few points (max -3). Active after 5 historical analyses — Deployment Guard implicitly learns what's "normal" for your repo.
+
+The factors combine into a single 0–100 score with a verdict:
 
 | Score | Verdict | Status |
 |---|---|---|
@@ -52,18 +61,22 @@ The Team plan trial requires no credit card. After the trial ends, accounts auto
 
 ## Combining with security scans
 
-Deployment Guard works best layered on top of detailed security findings. The `full-stack-with-guard.yml` workflow runs Trivy, Semgrep, Checkov, and Deployment Guard together — detailed findings land in the GitHub Security tab while the risk score acts as a final gate.
+Deployment Guard works best layered on top of detailed security findings. The `full-stack-with-guard.yml` workflow runs Trivy, Semgrep, Checkov, and Deployment Guard together — detailed findings land in the GitHub Security tab while the risk score acts as a final gate. **Findings counts flow directly into the risk score** (15% weighting when present).
 
 ~~~yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.0.0
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.1.1
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     with:
       trivy-severity: 'CRITICAL,HIGH'
       semgrep-config: 'p/default'
       checkov-framework: 'all'
       guard-fail-on-warn: false
-      fail-on-issues: true
+      fail-on-issues: false
     secrets:
       guard-api-key: ${{ secrets.GUARD_API_KEY }}
 ~~~
