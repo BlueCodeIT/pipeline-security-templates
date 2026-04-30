@@ -33,7 +33,7 @@ on: [push, pull_request]
 
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1.1.1
 ```
 
 → Findings land in your repo's **Security tab**.
@@ -69,25 +69,32 @@ Bitbucket doesn't support remote includes. Copy [`bitbucket-pipelines/full-stack
 
 ## Bonus: deployment risk scoring
 
-Want a single 0–100 risk score before every deployment? Try [Deployment Guard](https://www.bluecodeit.com/deployment-guard) — analyzes diff complexity, K8s changes, dependency risk, and incident history. **Free tier: 30 analyses/month, no credit card.**
+Want a single 0–100 risk score before every deployment? Try [Deployment Guard](https://www.bluecodeit.com/deployment-guard) — analyzes diff complexity, K8s changes, dependency risk, incident history, **and the security findings from these templates** (Trivy CVEs, Semgrep findings, Checkov failures). All factors flow into one deterministic score. **Free tier: 30 analyses/month, no credit card.**
 
 ```yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.1.1
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    with:
+      trivy-dockerfile: 'Dockerfile'
+      semgrep-config: 'p/default'
+      checkov-directory: '.'
     secrets:
       guard-api-key: ${{ secrets.GUARD_API_KEY }}
 ```
 
-[Get a free API key →](https://www.bluecodeit.com/signup)
-
----
+Findings show up in your repo's Security tab **and** in the unified risk score. [Get a free API key →](https://www.bluecodeit.com/signup)
 
 ## Battle-tested
 
 These templates run in production on:
 
-- **[Deployment Guard](https://www.bluecodeit.com/deployment-guard)** — AI-powered deployment risk scoring
+- **[Deployment Guard](https://www.bluecodeit.com/deployment-guard)** — AI-powered deployment risk scoring  
+  Eats its own dogfood: every Deployment Guard release is scanned by these exact templates before deploy.
 - **[BlueCode IT](https://www.bluecodeit.com)** — DevOps tools for teams of 5–50
 
 We use them ourselves before recommending them to you.
