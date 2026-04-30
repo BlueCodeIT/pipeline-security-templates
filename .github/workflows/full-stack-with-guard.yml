@@ -92,6 +92,10 @@ jobs:
   trivy:
     if: inputs.skip-trivy == false
     uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1.1.1
+    permissions:
+      contents: read
+      security-events: write
+      actions: read  
     with:
       image: ${{ inputs.trivy-image }}
       dockerfile: ${{ inputs.trivy-dockerfile }}
@@ -101,6 +105,10 @@ jobs:
   semgrep:
     if: inputs.skip-semgrep == false
     uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1.1.1
+    permissions:
+      contents: read
+      security-events: write
+      actions: read  
     with:
       config: ${{ inputs.semgrep-config }}
       severity: ${{ inputs.semgrep-severity }}
@@ -109,6 +117,10 @@ jobs:
   checkov:
     if: inputs.skip-checkov == false
     uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1.1.1
+    permissions:
+      contents: read
+      security-events: write
+      actions: read  
     with:
       directory: ${{ inputs.checkov-directory }}
       framework: ${{ inputs.checkov-framework }}

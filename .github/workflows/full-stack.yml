@@ -93,7 +93,7 @@ on:
 jobs:
   trivy:
     if: inputs.skip-trivy == false
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1.1.1
     permissions:
       contents: read
       security-events: write
@@ -105,7 +105,7 @@ jobs:
 
   semgrep:
     if: inputs.skip-semgrep == false
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1.1.1
     permissions:
       contents: read
       security-events: write
@@ -116,7 +116,7 @@ jobs:
 
   checkov:
     if: inputs.skip-checkov == false
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1.1.1
     permissions:
       contents: read
       security-events: write
