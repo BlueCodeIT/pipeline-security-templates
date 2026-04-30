@@ -37,6 +37,9 @@ jobs:
   checkov:
     name: Checkov IaC Scan
     runs-on: ubuntu-latest
+    outputs:
+      total_count: ${{ steps.parse.outputs.total_count }}
+      critical_count: ${{ steps.parse.outputs.critical_count }}
     permissions:
       contents: read
       security-events: write   # Required for SARIF upload to GitHub Security tab
@@ -65,3 +68,33 @@ jobs:
         with:
           sarif_file: 'checkov-results.sarif'
           category: checkov
+      - name: Parse SARIF for Deployment Guard
+        id: parse
+        if: always()
+        shell: bash
+        run: |
+          # checkov-action v12 schreibt manchmal in ein Verzeichnis statt direkt zur Datei
+          SARIF=""
+          for candidate in \
+              checkov-results.sarif \
+              checkov-results.sarif/results_sarif.sarif \
+              results_sarif.sarif; do
+            if [ -f "$candidate" ]; then
+              SARIF="$candidate"
+              break
+            fi
+          done
+          if [ -z "$SARIF" ]; then
+            echo "total_count=0" >> $GITHUB_OUTPUT
+            echo "critical_count=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Checkov: alle level=error sind failed checks. CRITICAL via properties.severity.
+          TOTAL=$(jq '[.runs[0].results[]? | select(.level == "error")] | length' "$SARIF")
+          CRIT=$(jq  '[.runs[0].results[]?
+                       | select(.level == "error")
+                       | select((.properties.severity? // "" | ascii_upcase) == "CRITICAL")
+                      ] | length' "$SARIF")
+          echo "total_count=${TOTAL:-0}" >> $GITHUB_OUTPUT
+          echo "critical_count=${CRIT:-0}" >> $GITHUB_OUTPUT
+          echo "Checkov: $TOTAL failed, $CRIT CRITICAL (parsed: $SARIF)"
