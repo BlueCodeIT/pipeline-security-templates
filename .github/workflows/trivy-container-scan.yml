@@ -92,7 +92,7 @@ jobs:
           
       - name: Run Trivy (table output for logs)
         if: always()
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ inputs.image == '' && 'scan-target:latest' || inputs.image }}
           format: 'table'
