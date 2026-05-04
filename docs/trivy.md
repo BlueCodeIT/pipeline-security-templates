@@ -24,7 +24,7 @@
 ```yaml
 jobs:
   trivy:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1
     with:
       image: ghcr.io/your-org/your-app:latest
 ```
@@ -34,7 +34,7 @@ jobs:
 ```yaml
 jobs:
   trivy:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1
     # No `image` input → builds from ./Dockerfile automatically
 ```
 
@@ -43,7 +43,7 @@ jobs:
 ```yaml
 jobs:
   trivy:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1
     with:
       dockerfile: ./docker/Dockerfile.prod
 ```
