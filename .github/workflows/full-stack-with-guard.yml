@@ -89,8 +89,24 @@ on:
         required: false
 
 jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      has_dockerfile: ${{ steps.check.outputs.has_dockerfile }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f "${{ inputs.trivy-dockerfile }}" ] || [ -n "${{ inputs.trivy-image }}" ]; then
+            echo "has_dockerfile=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_dockerfile=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No Dockerfile or image specified — skipping Trivy container scan."
+          fi
+
   trivy:
-    if: inputs.skip-trivy == false
+    needs: detect
+    if: inputs.skip-trivy == false && needs.detect.outputs.has_dockerfile == 'true'
     uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1.1.1
     permissions:
       contents: read

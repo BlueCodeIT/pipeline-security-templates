@@ -33,7 +33,7 @@ on: [push, pull_request]
 
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1.1.1
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1
 ```
 
 → Findings land in your repo's **Security tab**.
@@ -74,7 +74,7 @@ Want a single 0–100 risk score before every deployment? Try [Deployment Guard]
 ```yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.1.1
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
     permissions:
       contents: read
       security-events: write
@@ -141,7 +141,7 @@ Built by [BlueCode IT](https://www.bluecodeit.com) — focused on DevOps tooling
 We follow [SemVer](https://semver.org/). Pin to a release tag in production:
 
 ```yaml
-uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1.0.0
+uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1
 ```
 
 `@main` is the dev branch — fine for testing, **don't use in production**.

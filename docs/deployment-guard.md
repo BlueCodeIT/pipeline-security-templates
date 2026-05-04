@@ -9,7 +9,7 @@ Add it to your existing security pipeline by using the `full-stack-with-guard.ym
 ~~~yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.1.1
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
     permissions:
       contents: read
       security-events: write
@@ -66,7 +66,7 @@ Deployment Guard works best layered on top of detailed security findings. The `f
 ~~~yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.1.1
+    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
     permissions:
       contents: read
       security-events: write
