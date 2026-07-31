@@ -25,7 +25,7 @@
 ```yaml
 jobs:
   semgrep:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
 ```
 
 Uses Semgrep's `p/default` ruleset — balanced precision and recall, low false-positive rate.
@@ -35,7 +35,7 @@ Uses Semgrep's `p/default` ruleset — balanced precision and recall, low false-
 ```yaml
 jobs:
   semgrep:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
     with:
       config: 'p/owasp-top-ten'
       severity: 'WARNING'
@@ -47,7 +47,7 @@ jobs:
 ```yaml
 jobs:
   semgrep:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
     with:
       config: 'auto'
 ```
@@ -59,7 +59,7 @@ Semgrep auto-detects your stack and picks appropriate rules. Less precise than s
 ```yaml
 jobs:
   semgrep:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1
     with:
       paths-exclude: |
         tests/

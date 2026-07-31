@@ -3,7 +3,7 @@
 # Usage in your .gitlab-ci.yml:
 #
 #   include:
-#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/trivy.yml'
+#     - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/trivy.yml'
 #
 #   trivy_scan:
 #     extends: .trivy_template

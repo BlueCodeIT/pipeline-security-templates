@@ -35,7 +35,7 @@
 ```yaml
 jobs:
   checkov:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
 ```
 
 Default scans all detected frameworks in repo root.
@@ -45,7 +45,7 @@ Default scans all detected frameworks in repo root.
 ```yaml
 jobs:
   checkov:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
     with:
       directory: ./k8s
       framework: kubernetes
@@ -56,7 +56,7 @@ jobs:
 ```yaml
 jobs:
   checkov:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
     with:
       directory: ./terraform
       framework: terraform
@@ -68,7 +68,7 @@ jobs:
 ```yaml
 jobs:
   checkov:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
     with:
       framework: terraform,kubernetes,dockerfile
       soft-fail: true
@@ -79,7 +79,7 @@ jobs:
 ```yaml
 jobs:
   checkov:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1
     with:
       skip-checks: 'CKV_AWS_18,CKV_K8S_43,CKV_DOCKER_2'
 ```
@@ -187,7 +187,7 @@ framework:
 | Compliance reports (SOC2, HIPAA) | **Checkov** with custom rules |
 | Hardcoded secrets in IaC | **Checkov** (basic) or **Gitleaks** (specialized) |
 
-For deployment risk scoring on top of all of these, see [Deployment Guard](https://www.bluecodeit.com/deployment-guard).
+For deployment risk scoring on top of all of these, see [Deployment Guard](https://www.pantevosystems.com/deployment-guard).
 
 ## Resources
 

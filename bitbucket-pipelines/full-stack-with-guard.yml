@@ -1,6 +1,6 @@
 # Full Security Stack + Deployment Guard — Bitbucket Pipelines
 #
-# Get an API key: https://www.bluecodeit.com/signup
+# Get an API key: https://www.pantevosystems.com/signup
 # Set GUARD_API_KEY in: Repository Settings → Repository Variables (secured)
 
 image: atlassian/default-image:4
@@ -35,7 +35,7 @@ pipelines:
           - |
             if [ -z "$GUARD_API_KEY" ]; then
               echo "⚠️  GUARD_API_KEY not set — skipping Deployment Guard."
-              echo "Get a free API key: https://www.bluecodeit.com/signup"
+              echo "Get a free API key: https://www.pantevosystems.com/signup"
               exit 0
             fi
 
@@ -43,7 +43,7 @@ pipelines:
             DIFF_LINES_REMOVED=$(git diff HEAD~1 HEAD --shortstat 2>/dev/null | grep -oP '\d+(?= deletion)' || echo "0")
             DIFF_FILES_CHANGED=$(git diff HEAD~1 HEAD --name-only 2>/dev/null | wc -l || echo "0")
 
-            RESPONSE=$(curl -s -X POST "https://api.bluecodeit.com/analyze" \
+            RESPONSE=$(curl -s -X POST "https://api.pantevosystems.com/analyze" \
               -H "Content-Type: application/json" \
               -H "X-API-Key: $GUARD_API_KEY" \
               -d "{
@@ -66,7 +66,7 @@ pipelines:
             echo "Verdict: $VERDICT"
             echo "Status:  $STATUS"
             echo "═══════════════════════════════════════"
-            echo "Dashboard: https://www.bluecodeit.com/dashboard"
+            echo "Dashboard: https://www.pantevosystems.com/dashboard"
 
             if [ "$STATUS" = "BLOCKED" ]; then
               echo "❌ Deployment BLOCKED by risk score."

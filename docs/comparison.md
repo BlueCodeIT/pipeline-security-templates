@@ -135,7 +135,7 @@ For complete DevSecOps, also consider:
 - **Git history secret scanning** — [Gitleaks](https://github.com/gitleaks/gitleaks), [TruffleHog](https://github.com/trufflesecurity/trufflehog)
 - **Software Composition Analysis (SCA) deeper** — [Snyk](https://snyk.io/), [Dependabot](https://docs.github.com/en/code-security/dependabot)
 - **Runtime threat detection** — [Falco](https://falco.org/), [Tetragon](https://tetragon.io/)
-- **Deployment risk scoring** — [Deployment Guard](https://www.bluecodeit.com/deployment-guard) (combines all of the above into a single 0–100 score)
+- **Deployment risk scoring** — [Deployment Guard](https://www.pantevosystems.com/deployment-guard) (combines all of the above into a single 0–100 score)
 
 ## Summary
 
@@ -143,4 +143,4 @@ These three tools — Trivy, Semgrep, Checkov — cover ~80% of common DevSecOps
 
 For the missing 20%, layer in tools above based on your specific concerns.
 
-For deployment risk scoring on top of all findings, see [Deployment Guard](https://www.bluecodeit.com/deployment-guard).
+For deployment risk scoring on top of all findings, see [Deployment Guard](https://www.pantevosystems.com/deployment-guard).

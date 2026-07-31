@@ -11,7 +11,7 @@ Unlike GitHub Actions' Reusable Workflows, GitLab uses an `include` + `extends` 
 ```yaml
 # .gitlab-ci.yml
 include:
-  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/trivy.yml'
+  - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/trivy.yml'
 
 stages:
   - test
@@ -28,7 +28,7 @@ That's it. Push and watch the pipeline.
 ```yaml
 # .gitlab-ci.yml
 include:
-  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/full-stack.yml'
+  - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/full-stack.yml'
 
 stages:
   - security
@@ -53,7 +53,7 @@ All three jobs run in parallel within the `security` stage.
 ```yaml
 # .gitlab-ci.yml
 include:
-  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/full-stack-with-guard.yml'
+  - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/full-stack-with-guard.yml'
 
 variables:
   GIT_DEPTH: 2   # Required for Deployment Guard diff analysis

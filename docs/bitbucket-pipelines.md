@@ -32,7 +32,7 @@ For Trivy + Semgrep + Checkov in parallel, copy the contents of [`full-stack.yml
 
 Copy [`full-stack-with-guard.yml`](../bitbucket-pipelines/full-stack-with-guard.yml) and:
 
-1. Get an API key at [bluecodeit.com/signup](https://www.bluecodeit.com/signup)
+1. Get an API key at [pantevosystems.com/signup](https://www.pantevosystems.com/signup)
 2. Add `GUARD_API_KEY` as a **secured Repository Variable**:
    - Repository Settings → Repository Variables
    - Name: `GUARD_API_KEY`

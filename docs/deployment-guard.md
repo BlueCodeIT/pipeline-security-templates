@@ -1,6 +1,6 @@
 # Deployment Guard Integration
 
-[Deployment Guard](https://www.bluecodeit.com/deployment-guard) by BlueCode IT provides AI-powered deployment risk scoring (0–100) on top of your existing security pipeline. It analyzes diff complexity, Kubernetes changes, dependency risk, and incident history to give you a single actionable score before every deployment.
+[Deployment Guard](https://www.pantevosystems.com/deployment-guard) by Pantevo Systems provides AI-powered deployment risk scoring (0–100) on top of your existing security pipeline. It analyzes diff complexity, Kubernetes changes, dependency risk, and incident history to give you a single actionable score before every deployment.
 
 ## Quick start
 
@@ -9,7 +9,7 @@ Add it to your existing security pipeline by using the `full-stack-with-guard.ym
 ~~~yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
     permissions:
       contents: read
       security-events: write
@@ -20,7 +20,7 @@ jobs:
 
 ## Get an API key
 
-1. Sign up at [bluecodeit.com/signup](https://www.bluecodeit.com/signup) — free tier, no credit card required.
+1. Sign up at [pantevosystems.com/signup](https://www.pantevosystems.com/signup) — free tier, no credit card required.
 2. Copy your API key from the dashboard.
 3. Add it as a GitHub repository secret named `GUARD_API_KEY`:
    - Repository Settings → Secrets and variables → Actions → New repository secret
@@ -66,7 +66,7 @@ Deployment Guard works best layered on top of detailed security findings. The `f
 ~~~yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
     permissions:
       contents: read
       security-events: write
@@ -83,8 +83,8 @@ jobs:
 
 ## Resources
 
-- [Deployment Guard product page](https://www.bluecodeit.com/deployment-guard)
-- [Dashboard](https://www.bluecodeit.com/dashboard)
-- [GitHub Action: BlueCodeIT/deployment-guard-action](https://github.com/marketplace/actions/deployment-guard)
-- [Status page](https://status.bluecodeit.com)
-- [Contact: info@bluecodeit.com](mailto:info@bluecodeit.com)
+- [Deployment Guard product page](https://www.pantevosystems.com/deployment-guard)
+- [Dashboard](https://www.pantevosystems.com/dashboard)
+- [GitHub Action: PantevoSystems/deployment-guard-action](https://github.com/marketplace/actions/deployment-guard)
+- [Status page](https://status.pantevosystems.com)
+- [Contact: info@pantevosystems.com](mailto:info@pantevosystems.com)
