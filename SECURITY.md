@@ -12,7 +12,7 @@ If you discover a security issue in these templates — for example, a configura
 
 ### How to report
 
-Email: **info@bluecodeit.com**
+Email: **info@pantevosystems.com**
 
 Include:
 - Description of the issue

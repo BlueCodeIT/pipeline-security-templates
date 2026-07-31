@@ -3,13 +3,13 @@ name: Full Security Stack + Deployment Guard
 # Reusable workflow — Trivy + Semgrep + Checkov + Deployment Guard
 # Provides: detailed findings (in Security tab) AND a single 0-100 risk score
 #
-# Get an API key: https://www.bluecodeit.com/signup
+# Get an API key: https://www.pantevosystems.com/signup
 #
 # Usage in your repo:
 #
 # jobs:
 #   security:
-#     uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@main
+#     uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1.2.0
 #     secrets:
 #       guard-api-key: ${{ secrets.GUARD_API_KEY }}
 #
@@ -85,7 +85,7 @@ on:
 
     secrets:
       guard-api-key:
-        description: 'Deployment Guard API key. Get one at https://www.bluecodeit.com/signup'
+        description: 'Deployment Guard API key. Get one at https://www.pantevosystems.com/signup'
         required: false
 
 jobs:
@@ -107,7 +107,7 @@ jobs:
   trivy:
     needs: detect
     if: inputs.skip-trivy == false && needs.detect.outputs.has_dockerfile == 'true'
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1.1.1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@v1.2.0
     permissions:
       contents: read
       security-events: write
@@ -120,7 +120,7 @@ jobs:
 
   semgrep:
     if: inputs.skip-semgrep == false
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1.1.1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/semgrep-sast.yml@v1.2.0
     permissions:
       contents: read
       security-events: write
@@ -132,7 +132,7 @@ jobs:
 
   checkov:
     if: inputs.skip-checkov == false
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1.1.1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/checkov-iac.yml@v1.2.0
     permissions:
       contents: read
       security-events: write
@@ -157,7 +157,7 @@ jobs:
         run: |
           if [ -z "$GUARD_API_KEY" ]; then
             echo "⚠️  GUARD_API_KEY secret not set — skipping Deployment Guard."
-            echo "Get a free API key: https://www.bluecodeit.com/signup"
+            echo "Get a free API key: https://www.pantevosystems.com/signup"
             echo "key_set=false" >> $GITHUB_OUTPUT
           else
             echo "key_set=true" >> $GITHUB_OUTPUT
@@ -171,7 +171,7 @@ jobs:
 
       - name: Run Deployment Guard
         if: steps.check-key.outputs.key_set == 'true'
-        uses: BlueCodeIT/deployment-guard-action@v1
+        uses: PantevoSystems/deployment-guard-action@v1
         with:
           api-key: ${{ secrets.guard-api-key }}
           fail-on-blocked: ${{ inputs.guard-fail-on-warn }}
@@ -207,4 +207,4 @@ jobs:
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| Deployment Guard | ${{ needs.deployment-guard.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Risk dashboard: https://www.bluecodeit.com/dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "Risk dashboard: https://www.pantevosystems.com/dashboard" >> $GITHUB_STEP_SUMMARY

@@ -33,7 +33,7 @@ on: [push, pull_request]
 
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack.yml@v1
 ```
 
 → Findings land in your repo's **Security tab**.
@@ -43,7 +43,7 @@ jobs:
 ```yaml
 # .gitlab-ci.yml
 include:
-  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/full-stack.yml'
+  - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/full-stack.yml'
 
 stages:
   - security
@@ -69,12 +69,12 @@ Bitbucket doesn't support remote includes. Copy [`bitbucket-pipelines/full-stack
 
 ## Bonus: deployment risk scoring
 
-Want a single 0–100 risk score before every deployment? Try [Deployment Guard](https://www.bluecodeit.com/deployment-guard) — analyzes diff complexity, K8s changes, dependency risk, incident history, **and the security findings from these templates** (Trivy CVEs, Semgrep findings, Checkov failures). All factors flow into one deterministic score. **Free tier: 30 analyses/month, no credit card.**
+Want a single 0–100 risk score before every deployment? Try [Deployment Guard](https://www.pantevosystems.com/deployment-guard) — analyzes diff complexity, K8s changes, dependency risk, incident history, **and the security findings from these templates** (Trivy CVEs, Semgrep findings, Checkov failures). All factors flow into one deterministic score. **Free tier: 30 analyses/month, no credit card.**
 
 ```yaml
 jobs:
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@v1
     permissions:
       contents: read
       security-events: write
@@ -87,15 +87,15 @@ jobs:
       guard-api-key: ${{ secrets.GUARD_API_KEY }}
 ```
 
-Findings show up in your repo's Security tab **and** in the unified risk score. [Get a free API key →](https://www.bluecodeit.com/signup)
+Findings show up in your repo's Security tab **and** in the unified risk score. [Get a free API key →](https://www.pantevosystems.com/signup)
 
 ## Battle-tested
 
 These templates run in production on:
 
-- **[Deployment Guard](https://www.bluecodeit.com/deployment-guard)** — AI-powered deployment risk scoring  
+- **[Deployment Guard](https://www.pantevosystems.com/deployment-guard)** — AI-powered deployment risk scoring  
   Eats its own dogfood: every Deployment Guard release is scanned by these exact templates before deploy.
-- **[BlueCode IT](https://www.bluecodeit.com)** — DevOps tools for teams of 5–50
+- **[Pantevo Systems](https://www.pantevosystems.com)** — DevOps tools for teams of 5–50
 
 We use them ourselves before recommending them to you.
 
@@ -132,7 +132,7 @@ Most DevSecOps tools require:
 
 These templates skip all that. Open-source tools, copy-paste config, no signup.
 
-Built by [BlueCode IT](https://www.bluecodeit.com) — focused on DevOps tooling for teams of 5–50.
+Built by [Pantevo Systems](https://www.pantevosystems.com) — focused on DevOps tooling for teams of 5–50.
 
 ---
 
@@ -141,7 +141,7 @@ Built by [BlueCode IT](https://www.bluecodeit.com) — focused on DevOps tooling
 We follow [SemVer](https://semver.org/). Pin to a release tag in production:
 
 ```yaml
-uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1
+uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack.yml@v1
 ```
 
 `@main` is the dev branch — fine for testing, **don't use in production**.
@@ -154,7 +154,7 @@ uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@v1
 
 PRs welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-Issues, questions, suggestions: [open an issue](../../issues) or email [info@bluecodeit.com](mailto:info@bluecodeit.com).
+Issues, questions, suggestions: [open an issue](../../issues) or email [info@pantevosystems.com](mailto:info@pantevosystems.com).
 
 ---
 

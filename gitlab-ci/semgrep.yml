@@ -3,7 +3,7 @@
 # Usage in your .gitlab-ci.yml:
 #
 #   include:
-#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/semgrep.yml'
+#     - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/semgrep.yml'
 #
 #   semgrep_scan:
 #     extends: .semgrep_template

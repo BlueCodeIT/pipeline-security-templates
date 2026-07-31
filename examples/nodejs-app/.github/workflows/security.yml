@@ -11,13 +11,13 @@ jobs:
   # Option 1 — Single tool (uncomment to use)
   #
   # trivy:
-  #   uses: BlueCodeIT/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
+  #   uses: PantevoSystems/pipeline-security-templates/.github/workflows/trivy-container-scan.yml@main
   #   with:
   #     dockerfile: examples/nodejs-app/Dockerfile
 
   # Option 2 — Full stack (Trivy + Semgrep + Checkov in parallel)
   security:
-    uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack.yml@main
+    uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack.yml@main
     with:
       trivy-dockerfile: examples/nodejs-app/Dockerfile
       semgrep-paths-exclude: |
@@ -28,7 +28,7 @@ jobs:
   # Option 3 — Full stack + Deployment Guard (requires GUARD_API_KEY secret)
   #
   # security-with-guard:
-  #   uses: BlueCodeIT/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@main
+  #   uses: PantevoSystems/pipeline-security-templates/.github/workflows/full-stack-with-guard.yml@main
   #   with:
   #     trivy-dockerfile: examples/nodejs-app/Dockerfile
   #     fail-on-issues: false

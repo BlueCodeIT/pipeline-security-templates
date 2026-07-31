@@ -3,7 +3,7 @@
 # Usage in your .gitlab-ci.yml:
 #
 #   include:
-#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/checkov.yml'
+#     - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/checkov.yml'
 #
 #   checkov_scan:
 #     extends: .checkov_template

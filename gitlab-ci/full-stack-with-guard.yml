@@ -1,11 +1,11 @@
 # Full Security Stack + Deployment Guard — GitLab CI Template
 #
-# Get an API key: https://www.bluecodeit.com/signup
+# Get an API key: https://www.pantevosystems.com/signup
 #
 # Usage in your .gitlab-ci.yml:
 #
 #   include:
-#     - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/full-stack-with-guard.yml'
+#     - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/full-stack-with-guard.yml'
 #
 #   stages:
 #     - security
@@ -31,21 +31,21 @@
 #   GUARD_API_KEY (Settings → CI/CD → Variables)
 
 include:
-  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/trivy.yml'
-  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/semgrep.yml'
-  - remote: 'https://raw.githubusercontent.com/BlueCodeIT/pipeline-security-templates/main/gitlab-ci/checkov.yml'
+  - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/trivy.yml'
+  - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/semgrep.yml'
+  - remote: 'https://raw.githubusercontent.com/PantevoSystems/pipeline-security-templates/main/gitlab-ci/checkov.yml'
 
 .deployment_guard_template:
   stage: risk
   image: curlimages/curl:8.10.0
   variables:
-    GUARD_API_URL: "https://api.bluecodeit.com/analyze"
+    GUARD_API_URL: "https://api.pantevosystems.com/analyze"
     GUARD_FAIL_ON_WARN: "false"
   before_script:
     - |
       if [ -z "$GUARD_API_KEY" ]; then
         echo "⚠️  GUARD_API_KEY variable not set — skipping Deployment Guard."
-        echo "Get a free API key: https://www.bluecodeit.com/signup"
+        echo "Get a free API key: https://www.pantevosystems.com/signup"
         exit 0
       fi
   script:
@@ -81,7 +81,7 @@ include:
       echo "Verdict: $VERDICT"
       echo "Status:  $STATUS"
       echo "═══════════════════════════════════════"
-      echo "Dashboard: https://www.bluecodeit.com/dashboard"
+      echo "Dashboard: https://www.pantevosystems.com/dashboard"
 
       # Exit logic
       if [ "$STATUS" = "BLOCKED" ]; then
