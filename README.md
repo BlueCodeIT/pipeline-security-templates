@@ -93,7 +93,7 @@ Findings show up in your repo's Security tab **and** in the unified risk score. 
 
 These templates run in production on:
 
-- **[Deployment Guard](https://www.pantevosystems.com/deployment-guard)** — AI-powered deployment risk scoring  
+- **[Deployment Guard](https://www.pantevosystems.com/deployment-guard)** — deterministic deployment risk scoring
   Eats its own dogfood: every Deployment Guard release is scanned by these exact templates before deploy.
 - **[Pantevo Systems](https://www.pantevosystems.com)** — DevOps tools for teams of 5–50
 
